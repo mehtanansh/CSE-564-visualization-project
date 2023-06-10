@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> -->
+
+	{% if title %}
+		<title>{{title}}</title>
+	{% else %}
+		<title>Viz. Lab 2 - A</title>
+	{% endif %}
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <script src="static/dashboard_charts.js"></script>
+
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+
+
+	<div style="background-color:  #17202A ">
+        <h2 style="color : white; font-size: 45px;">
+            <center>
+                Visualization of Airbnb Listings in New York City
+                <button onclick="callme()" style="float:right;"><i class="fa fa-refresh" style="color:red;"></i></button>
+            </center>
+        </h2>
+	</div>
+    <style>
+        button {
+            height: 60px;
+            width: 60px;
+          }
+        .selected {
+          opacity: 1 !important;
+          stroke: black;
+          stroke-width: 1px;
+        }
+        </style>
+</head>
+
+<body style="background-color:#17202A;">
+    <!--  #2E4053 -->
+
+    <!-- #283747 -->
+
+	<div>
+		<center>
+            <div class = "row">
+                <div class = "col-4">
+                    <div class="card text-white mb-4" style = "background-color: #17202A; height: 42vh;" id = "ny_borough_map_holder" name = "ny_borough_map_holder">
+                        <div id = "ny_borough_map" name = "ny_borough_map">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-5">
+                    <div class="card text-white mb-4" style = "background-color:#17202A; height: 42vh;" id = "biplot_holder" name = "biplot_holder">
+                        <div id = "biplot" name = "biplot">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="card text-white mb-4" style = "background-color:#17202A; height: 42vh;" id = "donut_chart_holder" name = "donut_chart_holder">
+                        <div id = "donut_chart" name = "donut_chart">
+                        </div>
+                    </div>
+                </div>
+                <!-- <div class="col-2">
+                    <div class="card text-white mb-4" style="background-color:#283747; height: 42vh;" id = "box_plot_holder" name = "box_plot_holder">
+                        <div id = "box_plot" name = "box_plot">
+                        </div>
+                    </div>
+                </div> -->
+            </div>
+
+            <div class = "row" >
+                <div class="col-5">
+                    <div class="card text-white mb-4" style="background-color:#17202A; height: 43vh;" id = "pcp_holder" name = "pcp_holder">
+                        <div id = "pcp" name = "pcp">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-5">
+                    <div class="card text-white mb-4" style="background-color:#17202A; height: 43vh;" id = "bar_chart_holder" name = "bar_chart_holder" >
+                        <div id = "bar_chart" name = "bar_chart">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-2">
+                    <div class="card text-white mb-4" style=" background-color:#17202A; height: 43vh;" id = "pie_chart_holder" name = "pie_chart_holder">
+                        <select style="padding: 2px; width: 150px" onchange="call_func()" id = "select_pie" name = "select_pie">
+                            <option default = "default" value = "NA" >
+                                Overall
+                            </option>
+                            <option value = "long term">
+                                long term
+                            </option>
+                            <option value = "short term">
+                                short term
+                            </option>
+                            </select>
+                            <div id = "pie_chart" name = "pie_chart"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+		</center>
+	</div>
+<script type="text/javascript">
+    var df_trans ='{{ data.pca_data }}';
+    var df_trans = JSON.parse(df_trans);
+    var loads ='{{ data.loadings }}';
+    var loads = JSON.parse(loads);
+    var dat 
+
+    function callme(rest_d = null, y0 = null, y1 = null){
+        if (rest_d ===null){
+            staked_bar_graph();
+            ny_map();
+            pca_biplot();
+            box_chart();
+            donut_chart();
+            parallel_coordinates_plot();
+            pie_chart();
+        }else{
+            dat = rest_d;
+            ny_map(rest_d);
+            box_chart(rest_d, y0, y1);
+            // pca_biplot(rest_d);
+            parallel_coordinates_plot(rest_d);
+            staked_bar_graph(rest_d);
+            donut_chart(rest_d);
+            pie_chart(rest_d);
+        }
+    }
+
+    callme();
+
+    function call_func(){
+        pie_chart(dat);
+    }
+
+</script>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+
+</body>
+</html>
